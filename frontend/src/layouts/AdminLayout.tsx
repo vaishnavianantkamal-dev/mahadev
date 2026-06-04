@@ -30,12 +30,10 @@ const navigation = [
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
-export default function AdminLayout() {
-  const [user, setUser] = useState<SystemUser | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const isStub = (import.meta as any).env.VITE_DEV_STUB === "true" || true; // allow stub in dev
 
@@ -56,6 +54,41 @@ export default function AdminLayout() {
     return location.pathname.startsWith(item.href);
   };
 
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setSubmitting(true);
+
+    let role: "SUPER_ADMIN" | "TRUST_ADMIN" | "STAFF" | null = null;
+    if (email.trim() === "admin@temple.org" && password === "admin123") {
+      role = "SUPER_ADMIN";
+    } else if (email.trim() === "trustee@temple.org" && password === "trust123") {
+      role = "TRUST_ADMIN";
+    } else if (email.trim() === "staff@temple.org" && password === "staff123") {
+      role = "STAFF";
+    }
+
+    if (role) {
+      setTimeout(async () => {
+        await setStubRole(role);
+        const u = await getCurrentUser();
+        setUser(u);
+        setSubmitting(false);
+      }, 800);
+    } else {
+      setTimeout(() => {
+        setError("Invalid email or password. Please use the demo credentials below.");
+        setSubmitting(false);
+      }, 500);
+    }
+  };
+
+  const handleAutofill = (demoEmail: string, demoPass: string) => {
+    setEmail(demoEmail);
+    setPassword(demoPass);
+    setError("");
+  };
+
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-[#fbf6ec]">
@@ -67,24 +100,94 @@ export default function AdminLayout() {
     );
   }
 
-  // If no user, show a stub login panel (since it's dev stub mode)
+  // If no user, show the beautiful login panel with demo credentials
   if (!user) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#fbf6ec]">
-        <div className="bg-white p-8 rounded-2xl border border-[#ecddc7] shadow-lg text-center space-y-4 max-w-sm w-full mx-4">
-          <span className="text-5xl block">🛕</span>
-          <h1 className="text-xl font-bold text-[#8a2e13]">Shri Mallikarjun Admin</h1>
-          <p className="text-xs text-gray-500 font-medium">Select your role to continue in development mode</p>
-          <div className="space-y-2">
-            {(["SUPER_ADMIN", "TRUST_ADMIN", "STAFF"] as const).map((role) => (
+      <div className="flex min-h-screen items-center justify-center bg-[#fbf6ec] py-12 px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-2xl border border-[#ecddc7] shadow-lg">
+          <div className="text-center">
+            <span className="text-5xl block animate-bounce">🛕</span>
+            <h2 className="mt-4 text-2xl font-extrabold text-[#8a2e13]">
+              Shri Mallikarjun Devasthan
+            </h2>
+            <p className="mt-1 text-sm text-gray-500 font-bold">
+              Administrative CRM Login
+            </p>
+          </div>
+
+          <form className="mt-8 space-y-4" onSubmit={handleLogin}>
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 text-xs font-semibold p-3 rounded-lg text-center animate-shake">
+                ⚠️ {error}
+              </div>
+            )}
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-[#2a1810] mb-1">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@temple.org"
+                  className="w-full px-3 py-2 border border-[#ecddc7] rounded-lg focus:outline-none focus:border-[#8a2e13] focus:ring-1 focus:ring-[#8a2e13] text-sm font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[#2a1810] mb-1">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full px-3 py-2 border border-[#ecddc7] rounded-lg focus:outline-none focus:border-[#8a2e13] focus:ring-1 focus:ring-[#8a2e13] text-sm font-medium"
+                />
+              </div>
+            </div>
+
+            <div className="pt-2">
               <button
-                key={role}
-                onClick={() => setStubRole(role).then(() => getCurrentUser().then(setUser))}
-                className="w-full py-2 px-4 bg-[#8a2e13] text-[#fbf6ec] font-bold text-xs rounded-lg hover:bg-[#c25a22] transition-all"
+                type="submit"
+                disabled={submitting}
+                className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-[#8a2e13] hover:bg-[#c25a22] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8a2e13] disabled:opacity-50 transition-colors"
               >
-                Login as {role}
+                {submitting ? "Signing in..." : "Sign In"}
               </button>
-            ))}
+            </div>
+          </form>
+
+          {/* Demo Credentials Helper Accordion */}
+          <div className="mt-6 pt-6 border-t border-[#ecddc7]/40 bg-[#fbf6ec]/30 rounded-xl p-4 space-y-3">
+            <h4 className="text-xs font-extrabold text-[#8a2e13] uppercase tracking-wide text-center">
+              🔑 Demo Login Credentials
+            </h4>
+            <div className="space-y-2.5 text-[11px] font-semibold text-gray-700">
+              {[
+                { label: "Super Admin", email: "admin@temple.org", pass: "admin123" },
+                { label: "Trust Admin", email: "trustee@temple.org", pass: "trust123" },
+                { label: "Staff Member", email: "staff@temple.org", pass: "staff123" },
+              ].map((demo, idx) => (
+                <div key={idx} className="flex justify-between items-center py-1 border-b border-[#ecddc7]/20 last:border-0">
+                  <div>
+                    <p className="font-extrabold text-[#2a1810]">{demo.label}</p>
+                    <p className="text-gray-400 font-medium">{demo.email} | {demo.pass}</p>
+                  </div>
+                  <button
+                    onClick={() => handleAutofill(demo.email, demo.pass)}
+                    className="px-2.5 py-1 bg-[#bf8f2e]/10 text-[#8a2e13] border border-[#ecddc7] rounded hover:bg-[#8a2e13] hover:text-[#fbf6ec] hover:border-[#8a2e13] font-bold text-[9px] transition-all"
+                  >
+                    Auto-fill
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

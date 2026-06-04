@@ -30,6 +30,13 @@ const navigation = [
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
+export default function AdminLayout() {
+  const [user, setUser] = useState<SystemUser | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");

@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fbf6ec; /* warm cream */
+  --foreground: #2a1810; /* ink */
+  --primary: #8a2e13; /* maroon */
+  --saffron: #c25a22; /* saffron */
+  --gold: #bf8f2e; /* gold */
+  --gold-light: #e6c878; /* light gold */
+  --border-cream: #ecddc7;
+  --whatsapp: #1faa59;
+}
+
+@theme inline {
+  --color-primary: var(--primary);
+  --color-primary-saffron: var(--saffron);
+  --color-accent-gold: var(--gold);
+  --color-accent-gold-light: var(--gold-light);
+  --color-bg-cream: var(--background);
+  --color-ink: var(--foreground);
+  --color-border-cream: var(--border-cream);
+  --color-whatsapp-green: var(--whatsapp);
+
+  --font-sans: "Inter", sans-serif;
+  --font-display: "Poppins", sans-serif;
+
+  /* Global Font Size Scaling */
+  --font-size-xs: 0.875rem;
+  --font-size-xs--line-height: 1.25rem;
+  --font-size-sm: 1.0rem;
+  --font-size-sm--line-height: 1.5rem;
+  --font-size-base: 1.125rem;
+  --font-size-base--line-height: 1.75rem;
+  --font-size-lg: 1.25rem;
+  --font-size-lg--line-height: 2rem;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: "Inter", sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Poppins", sans-serif;
+}
+
+/* Custom scrollbars for a premium feel */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-cream);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold);
+}

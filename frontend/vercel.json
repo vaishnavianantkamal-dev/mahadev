@@ -1,0 +1,17 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://mahadev-server.onrender.com/api/:path*"
+    },
+    {
+      "source": "/receipts/:path*",
+      "destination": "https://mahadev-server.onrender.com/receipts/:path*"
+    },
+    {
+      "source": "/((?!api|receipts).*|$)",
+      "destination": "/index.html"
+    }
+  ]
+}

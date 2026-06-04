@@ -1,0 +1,514 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  SUPER_ADMIN
+  TRUST_ADMIN
+  STAFF
+}
+
+enum DevoteeSource {
+  WEBSITE
+  WHATSAPP
+  WALKIN
+  PHONE
+  IMPORT
+}
+
+enum ServiceCategory {
+  ABHISHEK
+  POOJA
+  MAHAPRASAD
+  OTHER
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum RoomBookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum DonationStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum PaymentType {
+  DONATION
+  BOOKING
+  ROOM
+}
+
+enum LedgerEntryType {
+  CREDIT
+  DEBIT
+}
+
+enum ChannelType {
+  WHATSAPP
+  SMS
+  WEB
+}
+
+enum BroadcastStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  SENT
+  FAILED
+}
+
+enum Locale {
+  mr
+  en
+}
+
+enum DarshanType {
+  AARTI
+  DARSHAN
+  MAHAPRASAD
+}
+
+enum MediaItemType {
+  AUDIO
+  VIDEO
+  TEXT
+  IMAGE
+}
+
+enum MediaCategory {
+  AARTI
+  STOTRA
+  CHALISA
+  HISTORY
+  OTHER
+}
+
+model Temple {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  address   String
+  phone     String
+  email     String
+  bankRef   String?
+  logoUrl   String?
+  settings  Json     @default("{}")
+  createdAt DateTime @default(now())
+
+  users           User[]
+  devotees        Devotee[]
+  serviceTypes    ServiceType[]
+  bookings        Booking[]
+  rooms           Room[]
+  roomBookings    RoomBooking[]
+  donations       Donation[]
+  payments        Payment[]
+  ledgerEntries   LedgerEntry[]
+  messageGroups   MessageGroup[]
+  broadcasts      Broadcast[]
+  messageLogs     MessageLog[]
+  siteContents    SiteContent[]
+  darshanTimings  DarshanTiming[]
+  events          Event[]
+  liveDarshans    LiveDarshan[]
+  mediaItems      MediaItem[]
+  settingsItems   Setting[]
+  auditLogs       AuditLog[]
+}
+
+model User {
+  id        String   @id // Clerk user ID
+  templeId  String
+  name      String
+  email     String   @unique
+  role      Role     @default(STAFF)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  temple Temple @relation(fields: [templeId], references: [id])
+
+  @@index([templeId])
+}
+
+model Devotee {
+  id                 String        @id @default(uuid())
+  templeId           String
+  name               String
+  phone              String        // Note: unique per temple is handled by unique index on (templeId, phone)
+  email              String?
+  city               String?
+  gotra              String?
+  notes              String?
+  source             DevoteeSource @default(WEBSITE)
+  consentWhatsapp    Boolean       @default(true)
+  totalDonations     Decimal       @default(0.0) @db.Decimal(12, 2)
+  lastInteractionAt  DateTime      @default(now())
+  createdAt          DateTime      @default(now())
+
+  temple       Temple        @relation(fields: [templeId], references: [id])
+  bookings     Booking[]
+  roomBookings RoomBooking[]
+  donations    Donation[]
+  messageLogs  MessageLog[]
+
+  @@unique([templeId, phone])
+  @@index([templeId])
+  @@index([phone])
+}
+
+model ServiceType {
+  id            String          @id @default(uuid())
+  templeId      String
+  name          String
+  category      ServiceCategory @default(OTHER)
+  description   String?
+  price         Decimal         @db.Decimal(10, 2)
+  slotCapacity  Int             @default(50)
+  durationMin   Int?
+  active        Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+
+  temple    Temple     @relation(fields: [templeId], references: [id])
+  timeSlots TimeSlot[]
+  bookings  Booking[]
+
+  @@index([templeId])
+}
+
+model TimeSlot {
+  id            String   @id @default(uuid())
+  serviceTypeId String
+  label         String   // e.g. "Morning Aarti slot", "10:00 AM - 11:00 AM"
+  startTime     String   // e.g. "10:00"
+  capacity      Int      @default(10)
+
+  serviceType ServiceType @relation(fields: [serviceTypeId], references: [id], onDelete: Cascade)
+
+  @@index([serviceTypeId])
+}
+
+model Booking {
+  id            String        @id @default(uuid())
+  templeId      String
+  devoteeId     String
+  serviceTypeId String
+  date          DateTime
+  slotLabel     String?
+  quantity      Int           @default(1)
+  amount        Decimal       @db.Decimal(10, 2)
+  status        BookingStatus @default(PENDING)
+  paymentId     String?
+  notes         String?
+  createdAt     DateTime      @default(now())
+
+  temple      Temple      @relation(fields: [templeId], references: [id])
+  devotee     Devotee     @relation(fields: [devoteeId], references: [id])
+  serviceType ServiceType @relation(fields: [serviceTypeId], references: [id])
+
+  @@index([templeId])
+  @@index([devoteeId])
+  @@index([serviceTypeId])
+  @@index([date])
+  @@index([status])
+}
+
+model Room {
+  id           String   @id @default(uuid())
+  templeId     String
+  name         String   // Room number or identifier
+  roomType     String   // e.g. "Deluxe AC", "Standard Non-AC", "Dormitory"
+  capacity     Int
+  pricePerNight Decimal  @db.Decimal(10, 2)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  temple       Temple        @relation(fields: [templeId], references: [id])
+  roomBookings RoomBooking[]
+
+  @@index([templeId])
+}
+
+model RoomBooking {
+  id         String            @id @default(uuid())
+  templeId   String
+  devoteeId  String
+  roomId     String
+  checkIn    DateTime
+  checkOut   DateTime
+  guests     Int               @default(1)
+  amount     Decimal           @db.Decimal(10, 2)
+  status     RoomBookingStatus @default(PENDING)
+  paymentId  String?
+  createdAt  DateTime          @default(now())
+
+  temple  Temple  @relation(fields: [templeId], references: [id])
+  devotee Devotee @relation(fields: [devoteeId], references: [id])
+  room    Room    @relation(fields: [roomId], references: [id])
+
+  @@index([templeId])
+  @@index([devoteeId])
+  @@index([roomId])
+  @@index([checkIn, checkOut])
+}
+
+model Donation {
+  id            String         @id @default(uuid())
+  templeId      String
+  devoteeId     String?
+  donorName     String
+  phone         String
+  email         String?
+  amount        Decimal        @db.Decimal(12, 2)
+  purpose       String?
+  status        DonationStatus @default(PENDING)
+  receiptNo     String         @unique
+  receiptPdfUrl String?
+  paymentId     String?
+  createdAt     DateTime       @default(now())
+
+  temple  Temple   @relation(fields: [templeId], references: [id])
+  devotee Devotee? @relation(fields: [devoteeId], references: [id])
+
+  @@index([templeId])
+  @@index([devoteeId])
+  @@index([receiptNo])
+  @@index([createdAt])
+}
+
+model Payment {
+  id                String      @id @default(uuid())
+  templeId          String
+  provider          String      @default("razorpay")
+  providerOrderId   String      @unique
+  providerPaymentId String?
+  amount            Decimal     @db.Decimal(12, 2)
+  currency          String      @default("INR")
+  status            PaymentStatus @default(PENDING)
+  type              PaymentType
+  referenceId       String      // ID of Booking, RoomBooking, or Donation
+  signature         String?
+  raw               Json        @default("{}")
+  createdAt         DateTime    @default(now())
+
+  temple Temple @relation(fields: [templeId], references: [id])
+
+  @@index([templeId])
+  @@index([providerOrderId])
+}
+
+model LedgerEntry {
+  id            String          @id @default(uuid())
+  templeId      String
+  entryType     LedgerEntryType
+  category      String          // e.g. "Donation", "Booking", "Room Booking", "Maintenance"
+  amount        Decimal         @db.Decimal(12, 2)
+  source        String          // e.g. "WEBSITE", "COUNTER", "DIRECT"
+  referenceType String?         // e.g. "Donation", "Booking", "RoomBooking"
+  referenceId   String?
+  date          DateTime        @default(now())
+  note          String?
+  createdBy     String?         // Clerk ID or "SYSTEM"
+  createdAt     DateTime        @default(now())
+
+  temple Temple @relation(fields: [templeId], references: [id])
+
+  @@index([templeId])
+  @@index([date])
+}
+
+model MessageGroup {
+  id          String   @id @default(uuid())
+  templeId    String
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  temple    Temple            @relation(fields: [templeId], references: [id])
+  templates MessageTemplate[]
+
+  @@index([templeId])
+}
+
+model MessageTemplate {
+  id                    String      @id @default(uuid())
+  groupId               String
+  name                  String
+  channel               ChannelType @default(WHATSAPP)
+  body                  String
+  variables             String[]    // List of keys like ["name", "receiptNo", "amount"]
+  whatsappTemplateName String?
+  language              String      @default("en")
+  active                Boolean     @default(true)
+  createdAt             DateTime    @default(now())
+
+  group      MessageGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  broadcasts Broadcast[]
+
+  @@index([groupId])
+}
+
+model Broadcast {
+  id          String          @id @default(uuid())
+  templeId    String
+  templateId  String
+  audience    Json            @default("{}") // JSON filters for devotees
+  scheduledAt DateTime?
+  status      BroadcastStatus @default(DRAFT)
+  sentCount   Int             @default(0)
+  failedCount Int             @default(0)
+  createdAt   DateTime        @default(now())
+
+  temple      Temple          @relation(fields: [templeId], references: [id])
+  template    MessageTemplate @relation(fields: [templateId], references: [id])
+  messageLogs MessageLog[]
+
+  @@index([templeId])
+  @@index([templateId])
+}
+
+model MessageLog {
+  id             String      @id @default(uuid())
+  templeId       String
+  devoteeId      String?
+  broadcastId    String?
+  channel        ChannelType
+  body           String
+  status         String      // e.g. "SENT", "DELIVERED", "FAILED"
+  providerMsgId  String?
+  sentAt         DateTime    @default(now())
+
+  temple    Temple     @relation(fields: [templeId], references: [id])
+  devotee   Devotee?   @relation(fields: [devoteeId], references: [id])
+  broadcast Broadcast? @relation(fields: [broadcastId], references: [id])
+
+  @@index([templeId])
+  @@index([devoteeId])
+  @@index([broadcastId])
+}
+
+model SiteContent {
+  id        String   @id @default(uuid())
+  templeId  String
+  key       String   // e.g. "home.hero_title", "about.history"
+  title     String
+  bodyRich  String
+  locale    Locale   @default(mr)
+  updatedAt DateTime @updatedAt
+
+  temple Temple @relation(fields: [templeId], references: [id])
+
+  @@unique([templeId, key, locale])
+  @@index([templeId])
+}
+
+model DarshanTiming {
+  id        String      @id @default(uuid())
+  templeId  String
+  label     String      // e.g. "Kakad Aarti", "Darshan Slot 1"
+  type      DarshanType @default(DARSHAN)
+  time      String      // e.g. "06:00 AM - 07:00 AM" or "06:00"
+  dayRule   String?     // e.g. "Daily", "Thursday Only"
+  active    Boolean     @default(true)
+  createdAt DateTime    @default(now())
+
+  temple Temple @relation(fields: [templeId], references: [id])
+
+  @@index([templeId])
+}
+
+model Event {
+  id          String   @id @default(uuid())
+  templeId    String
+  title       String
+  description String
+  startAt     DateTime
+  endAt       DateTime
+  isFestival  Boolean  @default(false)
+  bannerUrl   String?
+  createdAt   DateTime @default(now())
+
+  temple Temple @relation(fields: [templeId], references: [id])
+
+  @@index([templeId])
+  @@index([startAt])
+}
+
+model LiveDarshan {
+  id          String    @id @default(uuid())
+  templeId    String
+  title       String
+  youtubeId   String    // YouTube Video ID or URL
+  scheduledAt DateTime?
+  isLive      Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  temple Temple @relation(fields: [templeId], references: [id])
+
+  @@index([templeId])
+}
+
+model MediaItem {
+  id        String        @id @default(uuid())
+  templeId  String
+  type      MediaItemType
+  category  MediaCategory @default(OTHER)
+  title     String
+  url       String
+  language  String        @default("mr")
+  createdAt DateTime      @default(now())
+
+  temple Temple @relation(fields: [templeId], references: [id])
+
+  @@index([templeId])
+}
+
+model Setting {
+  id        String   @id @default(uuid())
+  templeId  String
+  key       String
+  value     Json
+  createdAt DateTime @default(now())
+
+  temple Temple @relation(fields: [templeId], references: [id])
+
+  @@unique([templeId, key])
+  @@index([templeId])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  templeId  String
+  userId    String?  // Clerk User ID or "SYSTEM"
+  action    String   // e.g. "CREATE_BOOKING", "UPDATE_SETTING"
+  entity    String   // e.g. "Booking", "Setting"
+  entityId  String?
+  meta      Json     @default("{}")
+  createdAt DateTime @default(now())
+
+  temple Temple @relation(fields: [templeId], references: [id])
+
+  @@index([templeId])
+  @@index([createdAt])
+}

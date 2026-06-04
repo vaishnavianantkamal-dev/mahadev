@@ -3,11 +3,11 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://mahadev-server.onrender.com/api/:path*"
+      "destination": "https://mahadev-9rl8.onrender.com/api/:path*"
     },
     {
       "source": "/receipts/:path*",
-      "destination": "https://mahadev-server.onrender.com/receipts/:path*"
+      "destination": "https://mahadev-9rl8.onrender.com/receipts/:path*"
     },
     {
       "source": "/((?!api|receipts).*|$)",

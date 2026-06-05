@@ -7,6 +7,8 @@ import dotenv from "dotenv";
 // Load environment variables from the local .env file
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
+import { db } from "./lib/db";
+import { seedDatabase } from "./seed";
 
 import authRouter from "./routes/auth";
 import devoteesRouter from "./routes/devotees";
@@ -53,6 +55,20 @@ app.get("/api/health", (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`[SERVER] Temple CRM Express API running on http://localhost:${PORT}`);
+  
+  // Auto-seed check
+  try {
+    const templeCount = await db.temple.count();
+    if (templeCount === 0) {
+      console.log("[SERVER] Database is empty. Running auto-seed...");
+      await seedDatabase();
+      console.log("[SERVER] Auto-seed completed successfully.");
+    } else {
+      console.log(`[SERVER] Database has ${templeCount} temple configs. Skipping auto-seed.`);
+    }
+  } catch (err) {
+    console.error("[SERVER] Failed to auto-seed database:", err);
+  }
 });

@@ -359,6 +359,7 @@ export async function seedDatabase() {
       { templeId, label: "General Darshan (सर्वसाधारण दर्शन)", type: DarshanType.DARSHAN, time: "08:30 AM - 12:00 PM", dayRule: "Daily" },
       { templeId, label: "Mahaprasad (महाप्रसाद)", type: DarshanType.MAHAPRASAD, time: "12:30 PM - 02:30 PM", dayRule: "Daily" },
       { templeId, label: "Evening Aarti & Bhajans (आरती व भजन)", type: DarshanType.AARTI, time: "07:30 PM - 08:30 PM", dayRule: "Daily" },
+      { templeId, label: "Evening Aarti & Mahaprasad (सायं आरती आणि महाप्रसाद)", type: DarshanType.AARTI, time: "07:00 PM - 08:30 PM", dayRule: "Daily" },
       { templeId, label: "Shejarti (शेजारती)", type: DarshanType.AARTI, time: "09:30 PM - 10:00 PM", dayRule: "Daily" },
     ],
   });
@@ -374,7 +375,7 @@ export async function seedDatabase() {
         startAt: new Date(today.getFullYear() + 1, 1, 15, 6, 0),
         endAt: new Date(today.getFullYear() + 1, 1, 16, 22, 0),
         isFestival: true,
-        bannerUrl: "https://images.unsplash.com/photo-1608976328267-e673d3ec06ce?q=80&w=800",
+        bannerUrl: "/images/shiva_mahashivratri.png",
       },
       {
         templeId,
@@ -383,7 +384,7 @@ export async function seedDatabase() {
         startAt: new Date(today.getFullYear(), 7, 1, 5, 0),
         endAt: new Date(today.getFullYear(), 7, 31, 21, 0),
         isFestival: true,
-        bannerUrl: "https://images.unsplash.com/photo-1609137144814-7d5267104b2a?q=80&w=800",
+        bannerUrl: "/images/shiva_shravan.png",
       },
     ],
   });
@@ -394,7 +395,7 @@ export async function seedDatabase() {
     data: {
       templeId,
       title: "Shri Mallikarjun Temple, Nhavre Live stream (नित्य दर्शन)",
-      youtubeId: "dQw4w9WgXcQ",
+      youtubeId: "o68x-977T3U",
       isLive: true,
     },
   });
@@ -423,7 +424,7 @@ export async function seedDatabase() {
         type: MediaItemType.VIDEO,
         category: MediaCategory.HISTORY,
         title: "मूर्ती आणि मंदिराचा इतिहास (Temple Architecture & History)",
-        url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        url: "https://www.youtube.com/watch?v=o68x-977T3U",
         language: "mr",
       },
     ],

@@ -66,6 +66,23 @@ export default function ContactPage() {
           </div>
         </div>
       </div>
+
+      {/* Google Map Section */}
+      <div className="bg-white p-6 sm:p-8 border border-[#ecddc7] rounded-2xl shadow-sm space-y-4">
+        <h3 className="text-base font-bold text-[#8a2e13] border-b border-[#ecddc7]/30 pb-3 flex items-center gap-2">
+          <MapPin className="w-5 h-5 text-[#bf8f2e]" />
+          Location Map & Directions
+        </h3>
+        <div className="w-full h-80 rounded-xl overflow-hidden border border-[#ecddc7] bg-gray-100">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3780.601569974249!2d74.3411475759737!3d18.636959965611484!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2d64f02888cf3%3A0xe54d924d5e975cae!2sShri%20Mallikarjun%20Mandir%2C%20Nhavre!5e0!3m2!1sen!2sin!4v1717580000000!5m2!1sen!2sin"
+            className="w-full h-full border-0"
+            allowFullScreen={true}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        </div>
+      </div>
     </div>
   );
 }

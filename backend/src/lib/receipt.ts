@@ -113,7 +113,10 @@ export async function generateReceiptPdf(
     color: rgb(0.97, 0.92, 0.86),
   });
 
-  const formattedAmt = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(amount);
+  const formattedAmt = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" })
+    .format(amount)
+    .replace("₹", "Rs. ")
+    .replace("INR", "Rs. ");
   page.drawText(`Amount Paid: ${formattedAmt}`, {
     x: 50,
     y: 112,

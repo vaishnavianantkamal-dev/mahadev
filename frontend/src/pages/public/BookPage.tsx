@@ -20,6 +20,7 @@ export default function BookPage() {
   const [error, setError] = useState<string | null>(null);
   const [checkoutOrder, setCheckoutOrder] = useState<any>(null);
   const [successReceipt, setSuccessReceipt] = useState<any>(null);
+  const [paymentMethod, setPaymentMethod] = useState("phonepe");
 
   useEffect(() => {
     getPublicPoojaServices().then(setServices);
@@ -110,6 +111,12 @@ export default function BookPage() {
               <span className="font-bold text-gray-700 truncate max-w-[180px]">{value}</span>
             </div>
           ))}
+        </div>
+        <div className="bg-[#fbf6ec] border border-[#ecddc7] p-5 rounded-2xl max-w-sm mx-auto text-center space-y-2">
+          <p className="text-xs font-bold text-[#8a2e13] uppercase tracking-wider">🙏 Gratitude & Blessings</p>
+          <p className="text-[11px] text-gray-600 font-semibold leading-relaxed">
+            Thank you for your devotion and support. May the divine blessings of Lord Shri Mallikarjun bring peace, prosperity, and happiness to you and your family.
+          </p>
         </div>
         <p className="text-[10px] text-gray-400 font-medium">A confirmation has been sent to your phone via WhatsApp/SMS.</p>
         <Link to="/" className="px-6 py-2.5 bg-[#8a2e13] text-[#fbf6ec] font-bold text-xs rounded-lg hover:bg-[#c25a22] transition-colors inline-block">
@@ -215,6 +222,46 @@ export default function BookPage() {
               <p>Total Cost: {formatCurrency(totalAmount)}</p>
               <p>Devotee: {devoteeName}</p>
             </div>
+
+            {/* Payment Method Selector */}
+            <div className="text-left space-y-2 border-t border-b border-[#ecddc7]/30 py-3">
+              <label className="block text-[10px] text-gray-400 uppercase font-bold tracking-wider">Select Payment Method</label>
+              <div className="grid grid-cols-2 gap-2 text-[10px] font-bold">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("phonepe")}
+                  className={`p-2 border rounded-lg flex items-center justify-center gap-1.5 transition-all ${paymentMethod === "phonepe" ? "border-purple-600 bg-purple-50 text-purple-700" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-purple-600" />
+                  PhonePe (UPI)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("gpay")}
+                  className={`p-2 border rounded-lg flex items-center justify-center gap-1.5 transition-all ${paymentMethod === "gpay" ? "border-blue-600 bg-blue-50 text-blue-700" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                  Google Pay
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("card")}
+                  className={`p-2 border rounded-lg flex items-center justify-center gap-1.5 transition-all ${paymentMethod === "card" ? "border-[#8a2e13] bg-orange-50 text-[#8a2e13]" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#8a2e13]" />
+                  Card
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("netbanking")}
+                  className={`p-2 border rounded-lg flex items-center justify-center gap-1.5 transition-all ${paymentMethod === "netbanking" ? "border-emerald-600 bg-emerald-50 text-emerald-700" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                  Net Banking
+                </button>
+              </div>
+            </div>
+
             <div className="flex gap-2">
               <button onClick={() => setCheckoutOrder(null)} className="flex-1 py-2 border border-[#ecddc7] rounded-lg font-bold text-xs text-gray-600 hover:bg-gray-100">Cancel</button>
               <button onClick={handleSimulatePaymentSuccess} disabled={loading} className="flex-1 py-2 bg-[#8a2e13] text-[#fbf6ec] font-bold rounded-lg text-xs hover:bg-[#c25a22]">

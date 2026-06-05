@@ -7,6 +7,14 @@ export default function MediaPage() {
   const { t } = useLocale();
   const [mediaItems, setMediaItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeVideoUrl, setActiveVideoUrl] = useState<string | null>(null);
+
+  const getYouTubeId = (url: string) => {
+    if (!url) return "";
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : url;
+  };
 
   useEffect(() => {
     getPublicMedia().then(setMediaItems).finally(() => setLoading(false));
@@ -49,10 +57,12 @@ export default function MediaPage() {
                   </div>
                 )}
                 {item.type === "VIDEO" && (
-                  <a href={item.url} target="_blank" rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#8a2e13] text-[#fbf6ec] font-bold rounded-lg hover:bg-[#c25a22] transition-colors">
+                  <button
+                    onClick={() => setActiveVideoUrl(item.url)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#8a2e13] text-[#fbf6ec] font-bold rounded-lg hover:bg-[#c25a22] transition-colors cursor-pointer"
+                  >
                     <Video className="w-4 h-4" /> Watch Video
-                  </a>
+                  </button>
                 )}
                 {item.type === "TEXT" && (
                   <div className="space-y-2">
@@ -70,6 +80,28 @@ export default function MediaPage() {
           ))
         )}
       </div>
+
+      {activeVideoUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className="bg-white p-4 rounded-2xl border border-[#ecddc7] shadow-2xl w-full max-w-3xl relative">
+            <button
+              onClick={() => setActiveVideoUrl(null)}
+              className="absolute -top-3 -right-3 bg-[#8a2e13] text-[#fbf6ec] font-bold w-8 h-8 rounded-full border-2 border-white flex items-center justify-center shadow-lg hover:bg-[#c25a22] transition-colors cursor-pointer text-xs"
+            >
+              ✕
+            </button>
+            <div className="aspect-video w-full rounded-xl overflow-hidden bg-black border border-[#ecddc7]">
+              <iframe
+                className="w-full h-full"
+                src={`https://www.youtube.com/embed/${getYouTubeId(activeVideoUrl)}?autoplay=1`}
+                title="Video Player"
+                allowFullScreen
+                allow="autoplay"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

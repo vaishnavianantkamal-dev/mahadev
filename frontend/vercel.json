@@ -10,7 +10,7 @@
       "destination": "https://mahadev-9rl8.onrender.com/receipts/:path*"
     },
     {
-      "source": "/((?!api|receipts).*|$)",
+      "source": "/:path*",
       "destination": "/index.html"
     }
   ]
